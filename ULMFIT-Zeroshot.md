@@ -43,8 +43,15 @@ bash mldoc.sh
 
 # to generate laser, note .h5 extension is missleading it is actually a pickle format
 
-for LANG in en de fr; do
+for LANG in en de es fr it ru zh; do                                        
     echo $LANG
-    python ${LASER}/source/generate_pseudo_labels.py embed1000/mldoc.en-en.h5 ~/workspace/ulmfit-multilingual/data/mldoc/${LANG}-books --suffix=1 --dataset=mldoc| grep Test:
+    python ${LASER}/source/generate_pseudo_labels.py embed1000/mldoc.en-en.h5 ~/workspace/ulmfit-multilingual/data/mldoc/${LANG}-1 --suffix=1 --dataset=mldoc| grep Test:
 done
+#en
+# | Test: 91.48% | classes: 23.77 24.90 26.25 25.07
+#de
+# | Test: 87.65% | classes: 21.98 24.45 27.65 25.93
+#fr
+# | Test: 84.00% | classes: 23.18 29.12 27.90 19.80
+# ...
 ```
