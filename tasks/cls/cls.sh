@@ -12,7 +12,7 @@
 #
 # --------------------------------------------------------
 #
-# bash script to calculate sentence embeddings for the MLDoc corpus,
+# bash script to calculate sentence embeddings for the cls corpus,
 # train and evaluate the classifier
 
 if [ -z ${LASER+x} ] ; then
@@ -21,10 +21,10 @@ if [ -z ${LASER+x} ] ; then
 fi
 
 # general config
-mldir="MLDoc"	# raw texts of MLdoc
-size=${1:-1000}
+clsdir="cls"	# raw texts of cls
+size="1800"
 edir="embed${size}"	# normalized texts and embeddings
-languages=('en' 'de' 'es' 'fr' 'it' 'ru' 'zh') # 'ja'
+languages=('en' 'de' 'fr') # 'ja'
 
 
 # encoder
@@ -34,16 +34,16 @@ bpe_codes="${model_dir}/93langs.fcodes"
 
 ###################################################################
 #
-# Extract files with labels and texts from the MLdoc corpus
+# Extract files with labels and texts from the cls corpus
 #
 ###################################################################
 
-ExtractMLdoc () {
+ExtractCLS () {
   ifname=$1
   ofname=$2
   lang=$3
   if [ ! -f ${ifname}.${lang} ] ; then
-    echo "Please install the MLDoc corpus first"
+    echo "Please install the CLS corpus first"
     exit
   fi
 
@@ -75,19 +75,19 @@ for d in ${edir} ; do
   mkdir -p ${d}
 done
 # Embed all data
-echo -e "\nExtracting MLDoc data"
-#ExtractMLdoc ${mldir}/mldoc.train1000 ${edir}/mldoc.train1000 "en"
-for part in "mldoc.train${size}" "mldoc.dev" "mldoc.test" ; do
+echo -e "\nExtracting CLS data"
+#ExtractCLS ${mldir}/cls.train1000 ${edir}/cls.train1000 "en"
+for part in "cls.train${size}" "cls.dev" "cls.test" ; do
   for l in ${languages[@]} ; do
-    ExtractMLdoc ${mldir}/${part} ${edir}/${part} ${l}
+    ExtractCLS ${clsdir}/${part} ${edir}/${part} ${l}
   done
 done
 
 MECAB="/private/home/schwenk/tools/mecab/mecab-0.996/install"
 export LD_LIBRARY_PATH="${MECAB}/lib:${LD_LIBRARY_PATH}"
-python3 mldoc.py --data_dir ${edir} --lang ${languages[@]} --bpe_codes ${bpe_codes} --encoder ${encoder} --dataset-size ${size}
+python3 cls.py --data_dir ${edir} --lang ${languages[@]} --bpe_codes ${bpe_codes} --encoder ${encoder} --dataset-size ${size}
 
-# MLDoc classifier parameters
+# cls classifier parameters
 nb_cl=4
 N=500
 lr=0.001
@@ -97,22 +97,22 @@ drop=0.2
 seed=1
 bsize=12
 
-echo -e "\nTraining MLDoc classifier (log files in ${edir})"
+echo -e "\nTraining cls classifier (log files in ${edir})"
 #for ltrn in "en" ; do
 for ltrn in ${languages[@]} ; do
   ldev=${ltrn}
-  lf="${edir}/mldoc.${ltrn}-${ldev}.log"
-  save="${edir}/mldoc.${ltrn}-${ldev}.h5"
+  lf="${edir}/cls.${ltrn}-${ldev}.log"
+  save="${edir}/cls.${ltrn}-${ldev}.h5"
   echo " - train on ${ltrn}, dev on ${ldev}"
   if [ ! -f ${lf} ] ; then
     python3 ${LASER}/source/sent_classif.py \
       --gpu 0 --base-dir ${edir} \
-      --train mldoc.train${size}.enc.${ltrn} \
-      --train-labels mldoc.train${size}.lbl.${ltrn} \
-      --dev mldoc.dev.enc.${ldev} \
-      --dev-labels mldoc.dev.lbl.${ldev} \
-      --test mldoc.test.enc \
-      --test-labels mldoc.test.lbl \
+      --train cls.train${size}.enc.${ltrn} \
+      --train-labels cls.train${size}.lbl.${ltrn} \
+      --dev cls.dev.enc.${ldev} \
+      --dev-labels cls.dev.lbl.${ldev} \
+      --test cls.test.enc \
+      --test-labels cls.test.lbl \
       --nb-classes ${nb_cl} \
       --nhid ${nhid[@]} --dropout ${drop} --bsize ${bsize} \
       --seed ${seed} --lr ${lr} --wdecay ${wd} --nepoch ${N} \
@@ -130,7 +130,7 @@ for l1 in ${languages[@]} ; do
 done
 echo ""
 for l1 in ${languages[@]} ; do
-  lf="${edir}/mldoc.${l1}-${l1}.log"
+  lf="${edir}/cls.${l1}-${l1}.log"
   echo -n " ${l1}:  "
   for l2 in ${languages[@]} ; do
     grep "Test lang ${l2}" $lf | sed -e 's/%//' | awk '{printf("  %5.2f", $10)}'

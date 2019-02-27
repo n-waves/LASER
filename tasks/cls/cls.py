@@ -33,7 +33,7 @@ from text_processing import Token, BPEfastApply, SplitLines, JoinEmbed
 
 parser = argparse.ArgumentParser('LASER: calculate embeddings for MLDoc')
 parser.add_argument(
-    '--mldoc', type=str, default='MLDoc',
+    '--cls', type=str, default='MLDoc',
     help='Directory of the MLDoc corpus')
 parser.add_argument(
     '--data_dir', type=str, default='embed',
@@ -70,7 +70,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-print('LASER: calculate embeddings for MLDoc')
+print('LASER: calculate embeddings for CLS')
 
 if not os.path.exists(args.data_dir):
     os.mkdir(args.data_dir)
@@ -81,7 +81,7 @@ print('\nProcessing:')
 for part in (f'train{args.dataset_size}', 'dev', 'test'):
     # for lang in "en" if part == 'train1000' else args.lang:
     for lang in args.lang:
-        cfname = os.path.join(args.data_dir, 'mldoc.' + part)
+        cfname = os.path.join(args.data_dir, 'cls.' + part)
         Token(cfname + '.txt.' + lang,
               cfname + '.tok.' + lang,
               lang=lang,

@@ -3,3 +3,8 @@ source/lib/__pycache__
 models
 tools-external
 tasks/mldoc/MLDoc
+.idea/workspace.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/LASER.iml
+.idea/encodings.xml

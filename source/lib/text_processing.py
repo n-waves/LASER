@@ -88,7 +88,7 @@ def Token(inp_fname, out_fname, lang='en',
                           '(gzip)' if gzip else '',
                           '(de-escaped)' if descape else '',
                           '(romanized)' if romanize else ''))
-        run(cat + inp_fname
+        cmd = (cat + inp_fname
             + '|' + REM_NON_PRINT_CHAR
             + '|' + NORM_PUNC + lang
             + ('|' + DESCAPE if descape else '')
@@ -96,7 +96,9 @@ def Token(inp_fname, out_fname, lang='en',
             + ('| python3 -m jieba -d ' if lang == 'zh' else '')
             + ('|' + MECAB + '/bin/mecab -O wakati -b 50000 ' if lang == 'ja' else '')
             + '|' + ROMAN_LC + roman
-            + '>' + out_fname,
+            + '>' + out_fname)
+        print ("Tokenziation CMD: ", cmd)
+        run(cmd,
             env=dict(os.environ, LD_LIBRARY_PATH=MECAB + '/lib'),
             shell=True)
     elif not over_write and verbose:
